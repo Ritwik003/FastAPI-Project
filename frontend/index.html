@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Clinical Portal</title>
+    <!-- Outfit Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="clinical-theme">
+    <!-- Global Portal Shell -->
+    <div id="portal-shell">
+
+        <!-- App Notifications Toast -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- 1. Authentication View -->
+        <div id="auth-view" class="view-panel active">
+            <div class="auth-card-backdrop"></div>
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo">
+                        <i data-lucide="activity" class="pulse-icon text-cyan"></i>
+                        <span>AURA CLINICAL</span>
+                    </div>
+                    <p class="auth-subtitle">Enterprise Healthcare Records & Chat Network</p>
+                </div>
+
+                <!-- Tab Headers -->
+                <div class="auth-tabs">
+                    <button id="tab-login-btn" class="auth-tab-btn active" onclick="switchAuthTab('login')">Sign
+                        In</button>
+                    <button id="tab-register-btn" class="auth-tab-btn" onclick="switchAuthTab('register')">Register
+                        Account</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active-form" onsubmit="handleLogin(event)">
+                    <div class="input-group">
+                        <label for="login-email"><i data-lucide="mail"></i> Email Address</label>
+                        <input type="email" id="login-email" required placeholder="name@auraclinical.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password"><i data-lucide="lock"></i> Password</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full glowing-btn">
+                        <span>Access Portal</span>
+                        <i data-lucide="arrow-right"></i>
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="reg-first-name">First Name</label>
+                            <input type="text" id="reg-first-name" placeholder="John">
+                        </div>
+                        <div class="input-group">
+                            <label for="reg-last-name">Last Name</label>
+                            <input type="text" id="reg-last-name" placeholder="Doe">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-email"><i data-lucide="mail"></i> Email Address</label>
+                        <input type="email" id="reg-email" placeholder="name@auraclinical.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-password"><i data-lucide="lock"></i> Password</label>
+                        <input type="password" id="reg-password" placeholder="Min. 6 characters">
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-full glowing-btn-secondary">
+                        <span>Establish Account</span>
+                        <i data-lucide="user-plus"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. Main Portal Shell (Protected View) -->
+        <div id="main-view" class="view-panel">
+
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <i data-lucide="activity" class="pulse-icon text-cyan"></i>
+                    <span>Aura Clinical</span>
+                </div>
+
+                <div class="user-badge-container">
+                    <div class="user-avatar">
+                        <span id="user-avatar-initials">U</span>
+                        <div class="online-indicator"></div>
+                    </div>
+                    <div class="user-info">
+                        <span id="user-display-name" class="user-name">Loading...</span>
+                        <span id="user-display-role" class="user-role-badge">User</span>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button id="nav-patients" class="nav-item active" onclick="switchMainTab('patients')">
+                        <i data-lucide="users"></i>
+                        <span>Patients Index</span>
+                    </button>
+                    <button id="nav-admin-users" class="nav-item admin-only" onclick="switchMainTab('admin-users')">
+                        <i data-lucide="users-2"></i>
+                        <span>User Management</span>
+                    </button>
+                    <button id="nav-admin-doctors" class="nav-item admin-only" onclick="switchMainTab('admin-doctors')">
+                        <i data-lucide="stethoscope"></i>
+                        <span>Create Doctor</span>
+                    </button>
+                    <button id="nav-chat-toggle" class="nav-item" onclick="toggleChatDrawer()">
+                        <i data-lucide="message-square"></i>
+                        <span>Universal Chat</span>
+                        <span id="chat-badge" class="badge badge-pulse">0</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button class="btn btn-logout btn-full" onclick="handleLogout()">
+                        <i data-lucide="log-out"></i>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-container">
+                <header class="main-header">
+                    <div class="header-title-area">
+                        <h1 id="page-title">Patients Index</h1>
+                        <p id="page-subtitle" class="text-muted">Loading Clinical Records Database...</p>
+                    </div>
+                    <div class="header-actions">
+                        <div id="connection-status" class="connection-status-badge offline">
+                            <span class="indicator-dot"></span>
+                            <span class="status-label">Network Offline</span>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-body">
+
+                    <!-- TAB A: Patients Dashboard (User, Admin, Doctor) -->
+                    <section id="tab-patients" class="dashboard-tab active">
+                        <!-- Stats Grid -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon bg-cyan-dim"><i data-lucide="heart" class="text-cyan"></i></div>
+                                <div class="stat-details">
+                                    <span class="stat-label">Monitored Records</span>
+                                    <span id="stat-patient-count" class="stat-value">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon bg-emerald-dim"><i data-lucide="activity-square"
+                                        class="text-emerald"></i></div>
+                                <div class="stat-details">
+                                    <span class="stat-label">Active Clinicians</span>
+                                    <span id="stat-doctor-count" class="stat-value">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon bg-purple-dim"><i data-lucide="sparkles" class="text-purple"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <span class="stat-label">Status Summary</span>
+                                    <span id="stat-scope-badge" class="stat-badge">System Clear</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Table Container -->
+                        <div class="card data-card">
+                            <div class="card-header flex-header">
+                                <div class="table-search-box">
+                                    <i data-lucide="search"></i>
+                                    <input type="text" id="patient-search" placeholder="Search by name, ID or city..."
+                                        oninput="filterPatients()">
+                                </div>
+                                <div class="table-controls">
+                                    <!-- Standard / Admin creation trigger -->
+                                    <button class="btn btn-sm btn-primary doctor-hide"
+                                        onclick="openCreatePatientModal()">
+                                        <i data-lucide="plus-circle"></i> Add Patient
+                                    </button>
+                                    <div class="sort-selector select-wrapper">
+                                        <select id="patient-sort" onchange="sortPatients()"
+                                            class="custom-select custom-select-sm">
+                                            <option value="">Sort Field: None</option>
+                                            <option value="height">Sort: Height</option>
+                                            <option value="weight">Sort: Weight</option>
+                                        </select>
+                                    </div>
+                                    <div class="sort-order-toggle">
+                                        <button class="btn-toggle-icon" id="sort-order-btn" onclick="toggleSortOrder()"
+                                            title="Toggle Ascending/Descending">
+                                            <i data-lucide="arrow-up-narrow-wide" id="sort-order-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="clinical-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Age / Gender</th>
+                                            <th>Height / Weight</th>
+                                            <th>BMI</th>
+                                            <th>Location</th>
+                                            <th>Assigned Clinician</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="patients-table-body">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- TAB B: User Management (Admin Only) -->
+                    <section id="tab-admin-users" class="dashboard-tab admin-only">
+                        <div class="card data-card">
+                            <div class="card-header flex-header">
+                                <h3>Portal Accounts Directory</h3>
+                                <button class="btn btn-sm btn-primary" onclick="openCreateUserModal()">
+                                    <i data-lucide="user-plus"></i> Provision Account
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="clinical-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Full Name</th>
+                                            <th>Email Address</th>
+                                            <th>System Role</th>
+                                            <th class="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table-body">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- TAB C: Create Doctor Profile (Admin Only) -->
+                    <section id="tab-admin-doctors" class="dashboard-tab admin-only">
+                        <div class="card doctor-form-card">
+                            <div class="card-header">
+                                <h3>Link New Medical Doctor Profile</h3>
+                                <p class="text-muted">Creates a Portal Account with the "doctor" role and establishes
+                                    their clinical credentials.</p>
+                            </div>
+                            <form id="create-doctor-form" onsubmit="handleCreateDoctor(event)">
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="doc-first-name">First Name</label>
+                                        <input type="text" id="doc-first-name" required placeholder="Emily">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="doc-last-name">Last Name</label>
+                                        <input type="text" id="doc-last-name" required placeholder="Watson">
+                                    </div>
+                                </div>
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="doc-email">Email Address</label>
+                                        <input type="email" id="doc-email" required
+                                            placeholder="e.watson@auraclinical.com">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="doc-password">Credentials Password</label>
+                                        <input type="password" id="doc-password" required placeholder="••••••••">
+                                    </div>
+                                </div>
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="doc-name">Professional Display Name</label>
+                                        <input type="text" id="doc-name" required placeholder="Dr. Emily Watson, MD">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="doc-specialization">Clinical Specialization</label>
+                                        <input type="text" id="doc-specialization" required
+                                            placeholder="Cardiology / Internal Medicine">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-secondary glowing-btn-secondary">
+                                    <i data-lucide="stethoscope"></i> Authorize & Register Doctor Profile
+                                </button>
+                            </form>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+
+        <!-- 3. Dynamic Side drawer for Universal Chat -->
+        <div id="chat-drawer" class="chat-drawer">
+            <div class="chat-drawer-header">
+                <div class="chat-title-group">
+                    <h3>Universal Encrypted Chat</h3>
+                    <div class="chat-indicator">
+                        <span class="indicator-dot chat-online"></span>
+                        <span id="chat-status-text" class="status-label">Online</span>
+                    </div>
+                </div>
+                <button class="btn-icon-close" onclick="toggleChatDrawer()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="chat-drawer-body">
+                <!-- Quick search / add contact dropdown -->
+                <div class="chat-quick-add">
+                    <div class="quick-add-input-wrapper">
+                        <i data-lucide="search" class="text-cyan"></i>
+                        <input type="text" id="chat-quick-add-id" placeholder="Search name or type User ID..."
+                            oninput="handleChatSearchInput(this.value)" onfocus="handleChatSearchFocus()"
+                            onblur="handleChatSearchBlur()" autocomplete="off">
+                    </div>
+                    <div id="chat-search-dropdown" class="chat-search-dropdown">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+                <!-- Main Split Pane for Sidebar and Chat View -->
+                <div class="chat-main-split">
+                    <!-- Left Sidebar for Contacts list -->
+                    <div class="chat-contacts-sidebar" id="chat-contacts-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    
+                    <!-- Right Area for Chat Window -->
+                    <div class="chat-window-container">
+                        <div id="chat-window-empty" class="chat-window-empty active">
+                            <i data-lucide="messages-square" class="text-cyan"></i>
+                            <p>Select a contact to begin secure communication</p>
+                        </div>
+                        <div id="chat-window-active" class="chat-window-active">
+                            <div class="chat-active-header">
+                                <span class="chat-recipient-name" id="chat-recipient-name">Recipient Name</span>
+                                <span class="chat-recipient-role" id="chat-recipient-role">Role</span>
+                            </div>
+                            <div class="chat-messages-container" id="chat-messages-box">
+                                <!-- Filled dynamically -->
+                            </div>
+                            <form class="chat-input-form" onsubmit="handleSendDirectMessage(event)">
+                                <input type="text" id="chat-message-input" placeholder="Type a secure message..."
+                                    autocomplete="off">
+                                <button type="submit" class="btn btn-primary btn-icon-only">
+                                    <i data-lucide="send"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. MODALS CONTAINER -->
+        <!-- A: Patient CRUD Modal (Add/Edit) -->
+        <div id="patient-modal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3 id="patient-modal-title">Register Patient Record</h3>
+                    <button class="btn-icon-close" onclick="closeModal('patient-modal')">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <form id="patient-form" onsubmit="handleSavePatient(event)">
+                    <input type="hidden" id="patient-form-mode" value="create"> <!-- 'create' or 'edit' -->
+                    <div class="form-grid-2">
+                        <div class="input-group">
+                            <label for="pat-id">Patient Reference ID</label>
+                            <input type="text" id="pat-id" required placeholder="e.g. P101">
+                        </div>
+                        <div class="input-group">
+                            <label for="pat-name">Full Patient Name</label>
+                            <input type="text" id="pat-name" required placeholder="Samuel Green">
+                        </div>
+                    </div>
+                    <div class="form-grid-3">
+                        <div class="input-group">
+                            <label for="pat-age">Age (Years)</label>
+                            <input type="number" id="pat-age" required min="0" max="150" placeholder="45">
+                        </div>
+                        <div class="input-group">
+                            <label for="pat-gender">Gender</label>
+                            <select id="pat-gender" class="custom-select" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="pat-city">Residence City</label>
+                            <input type="text" id="pat-city" required placeholder="Boston">
+                        </div>
+                    </div>
+                    <div class="form-grid-3">
+                        <div class="input-group">
+                            <label for="pat-height">Height (m)</label>
+                            <input type="number" step="0.01" id="pat-height" required min="0.5" max="3"
+                                placeholder="1.75">
+                        </div>
+                        <div class="input-group">
+                            <label for="pat-weight">Weight (kg)</label>
+                            <input type="number" step="0.1" id="pat-weight" required min="1" max="500"
+                                placeholder="70.5">
+                        </div>
+                        <div class="input-group">
+                            <label for="pat-doctor">Assigned Doctor</label>
+                            <select id="pat-doctor" class="custom-select" required>
+                                <option value="" disabled selected>Fetch Doctors...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline"
+                            onclick="closeModal('patient-modal')">Discard</button>
+                        <button type="submit" class="btn btn-primary">Save Patient Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- B: Patient Detail Panel & Comments Modal -->
+        <div id="patient-details-modal" class="modal-overlay">
+            <div class="modal-container modal-large">
+                <div class="modal-header">
+                    <h3>Clinical Record & Comments</h3>
+                    <button class="btn-icon-close" onclick="closeModal('patient-details-modal')">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <div class="modal-body-split">
+                    <!-- Profile Stats -->
+                    <div class="patient-clinical-profile">
+                        <div class="profile-avatar">
+                            <i data-lucide="user" class="text-cyan"></i>
+                        </div>
+                        <h4 id="det-name" class="profile-name">Samuel Green</h4>
+                        <span id="det-id" class="profile-id-badge">ID: P101</span>
+
+                        <div class="details-list">
+                            <div class="detail-item">
+                                <span class="label">Age / Gender</span>
+                                <span id="det-age-gender" class="val">45 / Male</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Clinical Height</span>
+                                <span id="det-height" class="val">1.75 m</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Clinical Weight</span>
+                                <span id="det-weight" class="val">70.5 kg</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Calculated BMI</span>
+                                <span id="det-bmi" class="val bmi-normal">23.0 (Normal)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">City Location</span>
+                                <span id="det-city" class="val">Boston</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Caring Clinician ID</span>
+                                <span id="det-doctor-id" class="val">Dr. Watson (Doc ID: 1)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="patient-comments-panel">
+                        <h4>Medical Record & Practitioner Comments</h4>
+
+                        <!-- List of Comments -->
+                        <div class="comments-scroller" id="det-comments-box">
+                            <!-- Filled dynamically -->
+                        </div>
+
+                        <!-- Add Comment form -->
+                        <form id="comment-form" class="comment-input-box" onsubmit="handleAddComment(event)">
+                            <input type="hidden" id="comment-patient-id" value="">
+                            <textarea id="comment-textarea"
+                                placeholder="Enter clinical assessment, prescription notes or patient updates..."
+                                required></textarea>
+                            <button type="submit" class="btn btn-secondary btn-sm">
+                                <i data-lucide="plus-circle"></i> Log Assessment Comment
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- C: Provision User Account Modal (Admin Only) -->
+        <div id="user-modal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3>Provision Portal Account</h3>
+                    <button class="btn-icon-close" onclick="closeModal('user-modal')">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <form id="user-form" onsubmit="handleCreateUserFromAdmin(event)">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label for="admin-user-first">First Name</label>
+                            <input type="text" id="admin-user-first" required placeholder="John">
+                        </div>
+                        <div class="input-group">
+                            <label for="admin-user-last">Last Name</label>
+                            <input type="text" id="admin-user-last" required placeholder="Smith">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="admin-user-email">Email Address</label>
+                        <input type="email" id="admin-user-email" required placeholder="j.smith@auraclinical.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="admin-user-pass">Login Password</label>
+                        <input type="password" id="admin-user-pass" required placeholder="••••••••">
+                    </div>
+                    <div class="input-group">
+                        <label for="admin-user-role">System Role</label>
+                        <select id="admin-user-role" class="custom-select" required>
+                            <option value="user" selected>Standard User</option>
+                            <option value="admin">System Administrator</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('user-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Authorize & Provision</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Core App JS -->
+    <script src="app.js"></script>
+</body>
+
+</html>
